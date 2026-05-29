@@ -56,7 +56,6 @@ bun link opencode-plugin-astgrep
 ```json
 {
   "plugin": [
-    "oh-my-opencode-slim",
     "opencode-plugin-astgrep"
   ]
 }
