@@ -1,10 +1,35 @@
 {
   "name": "opencode-plugin-astgrep",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
-  "description": "OpenCode local plugin for ast-grep (AST pattern search & rewrite)",
+  "description": "OpenCode plugin: AST pattern search & rewrite via ast-grep",
   "license": "MIT",
+  "main": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "files": [
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tnmt-1/opencode-plugin-astgrep.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tnmt-1/opencode-plugin-astgrep/issues"
+  },
+  "homepage": "https://github.com/tnmt-1/opencode-plugin-astgrep#readme",
+  "keywords": [
+    "opencode",
+    "plugin",
+    "ast-grep",
+    "ast",
+    "code-search",
+    "codemod"
+  ],
   "scripts": {
     "typecheck": "tsc --noEmit"
   },

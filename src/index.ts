@@ -341,3 +341,4 @@ const plugin = async (ctx: PluginInput) => {
 }
 
 export default plugin
+export { plugin as server }
