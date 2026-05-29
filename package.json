@@ -1,0 +1,19 @@
+{
+  "name": "opencode-plugin-astgrep",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenCode local plugin for ast-grep (AST pattern search & rewrite)",
+  "license": "MIT",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "^1",
+    "zod": "^4"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "^5"
+  }
+}
