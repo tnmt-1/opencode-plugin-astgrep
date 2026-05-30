@@ -16,13 +16,29 @@ opencode-plugin-astgrep/
 
 ## 導入手順
 
-### ast-grepのインストール
+### 1. ast-grepのインストール
 
 ```bash
 npm install -g @ast-grep/cli
 # または cargo install ast-grep
 # または brew install ast-grep
 ```
+
+`ast-grep --version` が通ればOK。
+
+### 2. opencode.jsonに追記
+
+`~/.config/opencode/opencode.json` の `plugin` 配列に以下を追加:
+
+```json
+{
+  "plugin": [
+    "opencode-plugin-astgrep@git+https://github.com/tnmt-1/opencode-plugin-astgrep.git"
+  ]
+}
+```
+
+OpenCode起動時に自動でインストール・ロードされます。`~/.config/opencode/plugins/` へのファイル配置は不要です。
 
 `ast-grep --version` が通ればOK。
 
