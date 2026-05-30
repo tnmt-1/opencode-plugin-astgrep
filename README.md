@@ -51,7 +51,7 @@ ASTパターンでコード検索。
 | `pattern` | `string` | yes | ASTパターン（例: `console.log($MSG)`） |
 | `lang` | `string` | no | 言語フィルター（ts, py, rs, go...） |
 | `path` | `string` | no | 検索対象パス |
-| `maxResults` | `number` | no | 最大結果数（default: 50, max: 200） |
+| `maxResults` | `number` | no | 返却件数の上限（default: 50, max: 200。CLIではなくプラグイン側で適用） |
 
 ### `ast_grep_rewrite`
 
@@ -98,7 +98,8 @@ ast_grep_scan({ path: "src/" })
 
 - **インジェクション対策**: Bun Shell API（`$`）のテンプレートリテラルによる自動エスケープ
 - **`sg`非使用**: Linuxで`sg`はshadow-utilsと衝突するため常に`ast-grep`コマンドを使用
-- **dry-run安全**: 書き換えはデフォルトdry-run、`apply: true` でのみ実変更
+- **dry-run安全**: 書き換えはデフォルトdry-run、`apply: true` で `ast-grep run -U` により実変更
+- **ast-grep 0.4x対応**: `run` / `scan` サブコマンドを使用（`--max-results` 等の非推奨フラグは不使用）
 - **コンテキスト維持**: `experimental.session.compacting` フックで直近5件の検索/書き換え結果をsession compaction時に注入
 - **エラー時**: 原因・実行コマンド・対処法をJSONで返却
 - **Zodスキーマ**: 全引数をZodでバリデーション
@@ -106,5 +107,5 @@ ast_grep_scan({ path: "src/" })
 ## 今後の拡張案
 
 1. **unified diff表示**: dry-run結果にdiffを追加し変更内容を可視化
-2. **インタラクティブモード**: `ast-grep -U` + `ask()` permission APIで1件ずつ確認しながら書き換え
+2. **インタラクティブモード**: `ast-grep run -i` + `ask()` permission APIで1件ずつ確認しながら書き換え
 3. **ルールテンプレート**: よく使うスキャンルールセットをプリセット内蔵

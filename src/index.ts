@@ -32,7 +32,15 @@ async function requireAstGrep($: PluginInput["$"]): Promise<string | null> {
 }
 
 function fmtCmd(args: string[]): string {
-  return `ast-grep ${args.map(a => a.includes(" ") ? `'${a}'` : a).join(" ")}`
+  return `ast-grep ${args.map(a => (a.includes(" ") ? `'${a}'` : a)).join(" ")}`
+}
+
+function isNoMatchResult(exitCode: number, stdout: string, stderr: string): boolean {
+  if (exitCode === 0) return false
+  const out = stdout.trim()
+  if (out === "[]") return true
+  const err = stderr.toLowerCase()
+  return !out && (err.includes("no match") || err.includes("no file"))
 }
 
 function parseMatches(stdout: string): { parsed: any[]; raw: string } | null {
@@ -58,11 +66,6 @@ function normalizeMatch(m: any) {
 
 const plugin = async (ctx: PluginInput) => {
   const { $ } = ctx
-
-  const errorInstalled = await requireAstGrep($)
-  if (errorInstalled) {
-    return {}
-  }
 
   return {
     "experimental.session.compacting": async (_input: unknown, output: { context: string[] }) => {
@@ -107,14 +110,25 @@ const plugin = async (ctx: PluginInput) => {
           const maxResults = Math.min(args.maxResults ?? 50, 200)
           const target = args.path || context.directory
 
-          const cmdArgs = ["-p", args.pattern, "--json", "--color", "never", "--max-results", String(maxResults)]
+          const cmdArgs = ["run", "-p", args.pattern, "--json", "--color", "never"]
           if (args.lang) cmdArgs.push("-l", args.lang)
           cmdArgs.push(target)
 
           const r = await $`ast-grep ${cmdArgs}`.nothrow()
+          const stdout = r.stdout.toString()
+          const stderr = r.stderr.toString().trim()
 
           if (r.exitCode !== 0) {
-            const stderr = r.stderr.toString().trim()
+            const parsed = parseMatches(stdout)
+            if (parsed && parsed.parsed.length === 0) {
+              return JSON.stringify({
+                success: true,
+                totalMatches: 0,
+                displayed: 0,
+                results: [],
+                summary: `No matches found for pattern: ${args.pattern}`,
+              })
+            }
             if (stderr.includes("parse error") || stderr.includes("pattern")) {
               return JSON.stringify({
                 success: false,
@@ -132,8 +146,7 @@ const plugin = async (ctx: PluginInput) => {
             })
           }
 
-          const out = r.stdout.toString()
-          const parsed = parseMatches(out)
+          const parsed = parseMatches(stdout)
 
           if (!parsed || parsed.parsed.length === 0) {
             return JSON.stringify({
@@ -185,21 +198,22 @@ const plugin = async (ctx: PluginInput) => {
           const target = args.path || context.directory
           const isApply = args.apply === true
 
-          const cmdArgs = ["-p", args.pattern, "-r", args.rewrite, "--color", "never"]
+          const cmdArgs = ["run", "-p", args.pattern, "-r", args.rewrite, "--color", "never"]
           if (args.lang) cmdArgs.push("-l", args.lang)
           cmdArgs.push(target)
 
           if (isApply) {
-            cmdArgs.push("-i", "--no-backup")
+            cmdArgs.push("-U")
           } else {
             cmdArgs.push("--json")
           }
 
           const r = await $`ast-grep ${cmdArgs}`.nothrow()
+          const stdout = r.stdout.toString()
+          const stderr = r.stderr.toString().trim()
 
           if (r.exitCode !== 0) {
-            const stderr = r.stderr.toString().trim()
-            if (stderr.includes("no match") || stderr.includes("no file")) {
+            if (isNoMatchResult(r.exitCode, stdout, stderr)) {
               return JSON.stringify({
                 success: true,
                 dryRun: !isApply,
@@ -236,8 +250,7 @@ const plugin = async (ctx: PluginInput) => {
             })
           }
 
-          const out = r.stdout.toString()
-          const parsed = parseMatches(out)
+          const parsed = parseMatches(stdout)
 
           if (!parsed || parsed.parsed.length === 0) {
             return JSON.stringify({
